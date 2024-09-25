@@ -1,0 +1,41 @@
+networks:
+  trading_laravel:
+
+
+services:
+
+  mysql:
+    image: mariadb:10.5.8
+    container_name: trading_mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "4306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    env_file:
+      - .env
+    networks:
+      - trading_laravel
+
+  phpmyadmin:
+    container_name: trading_phpmyadmin
+    depends_on:
+      - mysql
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - '8086:80'
+    env_file:
+      - .env
+    networks:
+      - trading_laravel
+
+  redis:
+    image: redis:alpine
+    container_name: trading_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - trading_laravel
