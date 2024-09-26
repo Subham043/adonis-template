@@ -43,7 +43,7 @@ export const authThrottle = limiter.define('auth', (ctx) => {
    * Allow guest users to make 10 requests by ip address
    */
   return limiter
-    .allowRequests(3)
+    .allowRequests(5)
     .every('1 minute')
     .usingKey(`auth_ip_${ctx.request.ip()}`)
     .blockFor('5 mins')

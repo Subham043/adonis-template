@@ -24,7 +24,8 @@ router
       .group(() => {
         router.post('/login', [AuthController, 'login']).use(authThrottle)
         router.post('/register', [AuthController, 'register']).use(authThrottle)
-        router.post('/forgot-password', [AuthController, 'forgot_password']).use(authThrottle)
+        router.post('/forgot-password', [AuthController, 'forgotPassword']).use(authThrottle)
+        router.post('/reset-password/:id', [AuthController, 'resetPassword']).use(authThrottle).as('reset.password')
         router.get('/verify/:id', [AuthController, 'verifyEmail']).use(apiThrottle).as('email.verify')
         router.post('/logout', [AuthController, 'logout']).use(middleware.auth({
           guards: ['api']

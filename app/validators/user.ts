@@ -44,3 +44,22 @@ export const userForgotPasswordValidator = vine.compile(
         }),
     })
 )
+
+/**
+ * Validates the user's reset password action
+ */
+export const userResetPasswordValidator = vine.compile(
+    vine.object({
+        email: vine.string().trim().email().exists(async (db, value, field) => {
+            const user = await db
+                .from('users')
+                .where('id', field.meta.userId)
+                .where('email', value)
+                .first()
+            return user
+        }),
+        password: vine.string().trim().confirmed({
+            confirmationField: 'password_confirmation',
+        }),
+    })
+)

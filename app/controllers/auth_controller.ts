@@ -2,7 +2,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 import {
     userRegistrationValidator,
     userLoginValidator,
-    userForgotPasswordValidator
+    userForgotPasswordValidator,
+    userResetPasswordValidator
 } from '#validators/user'
 import encryption from '@adonisjs/core/services/encryption'
 import { inject } from '@adonisjs/core'
@@ -31,7 +32,7 @@ export default class AuthController {
         return response.created(user)
     }
     
-    async forgot_password({ request, response }: HttpContext) {
+    async forgotPassword({ request, response }: HttpContext) {
         const payload = await request.validateUsing(userForgotPasswordValidator);
         await this.authService.forgotPassword(payload);
         return response.ok({
@@ -47,6 +48,19 @@ export default class AuthController {
         return response.ok({
             success: true,
             message: 'Email verified successfully',
+        })
+    }
+
+    async resetPassword({ response, request, params }: HttpContext) {
+        const id = encryption.decrypt(params.id) as number;
+        const payload = await request.validateUsing(userResetPasswordValidator, {
+            meta: { userId: id }
+        });
+        const user = await this.authService.findUserByIdAndEmail(id, payload.email);
+        await this.authService.resetPassword(user, payload.password);
+        return response.ok({
+            success: true,
+            message: 'Password reset successful',
         })
     }
 

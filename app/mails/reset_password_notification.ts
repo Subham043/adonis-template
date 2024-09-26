@@ -16,12 +16,12 @@ export default class ResetPasswordNotification extends BaseMail {
    * the email is sent or queued.
    */
   prepare() {
-    const encryptedId = encryption.encrypt(this.user.id, '15 days')
+    const encryptedId = encryption.encrypt(this.user.id, '20 minutes')
     const verificationUrl = router
       .builder()
       .prefixUrl('http://localhost:3333')
       .params({ id: encryptedId })
-      .make('email.verify')
+      .make('reset.password')
     this.message.to(this.user.email).htmlView('emails/reset_password_email', { user: this.user, verificationUrl })
   }
 }

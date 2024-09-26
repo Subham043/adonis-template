@@ -38,6 +38,11 @@ export default class UserService {
       return await User.query().where('id', id).whereNull('email_verified_at').firstOrFail();
     }
     
+    async findUserByIdAndEmail(id: number, email: string): Promise<User>
+    {
+      return await User.query().where('id', id).where('email', email).firstOrFail();
+    }
+    
     async findByEmail(email: string): Promise<User>
     {
       return await User.query().where('email', email).firstOrFail();
@@ -52,6 +57,11 @@ export default class UserService {
     async verifyUser(user: User): Promise<void>
     {
         await user.merge({ emailVerifiedAt: DateTime.local() }).save()
+    }
+    
+    async resetPassword(user: User, password: string): Promise<void>
+    {
+        await user.merge({ password }).save()
     }
 
     async logout(id: number): Promise<void>
