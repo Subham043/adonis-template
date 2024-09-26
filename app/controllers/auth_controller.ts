@@ -1,10 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import {
-    userRegistrationValidator,
-    userLoginValidator,
-    userForgotPasswordValidator,
-    userResetPasswordValidator
-} from '#validators/user'
+    authRegistrationValidator,
+    authLoginValidator,
+    authForgotPasswordValidator,
+    authResetPasswordValidator
+} from '#validators/auth'
 import encryption from '@adonisjs/core/services/encryption'
 import { inject } from '@adonisjs/core'
 import AuthService from '#services/auth_service'
@@ -17,7 +17,7 @@ export default class AuthController {
     ) { }
 
     async login({ request, response }: HttpContext) {
-        const { email, password } = await request.validateUsing(userLoginValidator);
+        const { email, password } = await request.validateUsing(authLoginValidator);
         const user = await this.authService.authenticate(email, password)
         const token = await this.authService.generateAccessToken(user)
         return response.ok({
@@ -27,13 +27,13 @@ export default class AuthController {
     }
 
     async register({ request, response }: HttpContext) {
-        const payload = await request.validateUsing(userRegistrationValidator);
+        const payload = await request.validateUsing(authRegistrationValidator);
         const user = await this.authService.registration(payload);
         return response.created(user)
     }
     
     async forgotPassword({ request, response }: HttpContext) {
-        const payload = await request.validateUsing(userForgotPasswordValidator);
+        const payload = await request.validateUsing(authForgotPasswordValidator);
         await this.authService.forgotPassword(payload);
         return response.ok({
             success: true,
@@ -53,7 +53,7 @@ export default class AuthController {
 
     async resetPassword({ response, request, params }: HttpContext) {
         const id = encryption.decrypt(params.id) as number;
-        const payload = await request.validateUsing(userResetPasswordValidator, {
+        const payload = await request.validateUsing(authResetPasswordValidator, {
             meta: { userId: id }
         });
         const user = await this.authService.findUserByIdAndEmail(id, payload.email);
@@ -61,15 +61,6 @@ export default class AuthController {
         return response.ok({
             success: true,
             message: 'Password reset successful',
-        })
-    }
-
-    async logout({ response, auth }: HttpContext) {
-        const id = auth.user!.id!
-        await this.authService.logout(id)
-        return response.ok({
-            success: true,
-            message: 'User logged out',
         })
     }
 }
