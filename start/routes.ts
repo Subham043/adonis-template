@@ -38,7 +38,9 @@ router
         router.group(() => {
           router.put('/profile', [AccountController, 'updateProfile'])
           router.put('/password', [AccountController, 'updatePassword'])
-        }).prefix('/update')
+        }).prefix('/update').use(middleware.verifiedAuth({
+          guards: ['api']
+        }))
       })
       .use(middleware.auth({
         guards: ['api']
