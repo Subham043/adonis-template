@@ -29,3 +29,18 @@ export const userRegistrationValidator = vine.compile(
         }),
     })
 )
+
+/**
+ * Validates the user's forgot password action
+ */
+export const userForgotPasswordValidator = vine.compile(
+    vine.object({
+        email: vine.string().trim().email().exists(async (db, value, _field) => {
+            const user = await db
+                .from('users')
+                .where('email', value)
+                .first()
+            return user
+        }),
+    })
+)

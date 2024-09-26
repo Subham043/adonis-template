@@ -10,7 +10,7 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
 import { apiThrottle, authThrottle } from '#start/limiter'
-const UsersController = () => import('#controllers/users_controller')
+const AuthController = () => import('#controllers/auth_controller')
 
 router.get('/', async () => {
   return {
@@ -22,10 +22,11 @@ router
   .group(() => {
     router
       .group(() => {
-        router.post('/login', [UsersController, 'login']).use(authThrottle)
-        router.post('/register', [UsersController, 'register']).use(authThrottle)
-        router.get('/verify/:id', [UsersController, 'verifyEmail']).use(apiThrottle).as('email.verify')
-        router.post('/logout', [UsersController, 'logout']).use(middleware.auth({
+        router.post('/login', [AuthController, 'login']).use(authThrottle)
+        router.post('/register', [AuthController, 'register']).use(authThrottle)
+        router.post('/forgot-password', [AuthController, 'forgot_password']).use(authThrottle)
+        router.get('/verify/:id', [AuthController, 'verifyEmail']).use(apiThrottle).as('email.verify')
+        router.post('/logout', [AuthController, 'logout']).use(middleware.auth({
           guards: ['api']
         })).use(apiThrottle)
       })
