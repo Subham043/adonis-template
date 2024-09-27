@@ -1,10 +1,10 @@
 import { ExtendedError, Server, Socket } from 'socket.io'
 import { createAdapter } from "@socket.io/redis-streams-adapter";
-import { Redis } from "ioredis";
 import env from '#start/env'
 import { AccessToken } from '@adonisjs/auth/access_tokens';
 import User from '#models/user';
 import db from '@adonisjs/lucid/services/db';
+import redis from '@adonisjs/redis/services/main'
 
 class Ws {
     io: Server | undefined
@@ -17,7 +17,7 @@ class Ws {
         if (!env.get('ALLOW_SOCKET')) {
             return
         }
-        
+
         if (this.booted) {
             return
         }
@@ -28,20 +28,16 @@ class Ws {
 
         this.io.use(this.authMiddleware.bind(this))
 
-        this.io.listen(env.get('PORT'))
-    }
-
-    protected redisClient(): Redis {
-        return new Redis({
-            host: env.get('REDIS_HOST'),
-            port: env.get('REDIS_PORT'),
-            password: env.get('REDIS_PASSWORD'),
+        this.io.on("new_namespace", (namespace) => {
+            namespace.use(this.authMiddleware.bind(this));
         });
+
+        this.io.listen(env.get('PORT'))
     }
 
     private setupSocket(): Server {
         return new Server({
-            adapter: createAdapter(this.redisClient()),
+            adapter: createAdapter(redis),
             cors: {
                 origin: env.get('NODE_ENV') === "production" ? [env.get('APP_URL')] : '*',
                 allowedHeaders: ['Access-Control-Allow-Origin', 'Content-Type', 'Authorization'],
@@ -68,8 +64,8 @@ class Ws {
             }
         }
 
-        const err = new Error('Unauthorized')
-        return next(err)
+        socket.disconnect()
+        return next(new Error('Unauthorized'))
     }
 }
 

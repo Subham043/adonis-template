@@ -62,7 +62,6 @@
     "@socket.io/redis-streams-adapter": "^0.2.2",
     "@vinejs/vine": "^2.1.0",
     "edge.js": "^6.2.0",
-    "ioredis": "^5.4.1",
     "luxon": "^3.5.0",
     "mysql2": "^3.11.3",
     "reflect-metadata": "^0.2.2",
