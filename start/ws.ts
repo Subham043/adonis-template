@@ -1,20 +1,14 @@
 import app from '@adonisjs/core/services/app'
 import Ws from '#services/ws_service'
+import { HttpContext } from '@adonisjs/core/http'
 
 app.ready(() => {
     Ws.boot()
-    const io = Ws.io
-    io?.of('/test').on('connection', async (socket) => {
-        console.log(socket.id)
-        
-        socket.emit('ping', socket.data.user)
-        socket.on('pong', (data) => {
-          socket.broadcast.emit('msg', data)
-        })
+    Ws.connectSocket()
+})
 
-        //best practice
-        socket.on('disconnect', () => {
-          socket.removeAllListeners();
-        });
-    })
+app.terminating(() => {
+  const ctx = HttpContext.get()
+  if (!ctx) return
+  ctx.socket.disconnect()
 })

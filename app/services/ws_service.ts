@@ -5,9 +5,16 @@ import { AccessToken } from '@adonisjs/auth/access_tokens';
 import User from '#models/user';
 import db from '@adonisjs/lucid/services/db';
 import redis from '@adonisjs/redis/services/main'
+import { HttpContext } from '@adonisjs/core/http'
+
+declare module '@adonisjs/core/http' {
+    export interface HttpContext {
+        socket: Socket
+    }
+}
 
 class Ws {
-    io: Server | undefined
+    private io: Server | undefined
     private booted = false
 
     boot() {
@@ -32,7 +39,8 @@ class Ws {
             namespace.use(this.authMiddleware.bind(this));
         });
 
-        this.io.listen(env.get('PORT'))
+        // this.io.listen(env.get('PORT'))
+        this.io.attach(env.get('PORT'))
     }
 
     private setupSocket(): Server {
@@ -67,6 +75,22 @@ class Ws {
         socket.disconnect()
         return next(new Error('Unauthorized'))
     }
+
+    connectSocket() {
+        this.io?.on('connection', this.onSocketConnection)
+    }
+
+    private onSocketConnection(socket: Socket) {
+        // console.log(socket.id)
+        HttpContext.getter('socket', function (this: HttpContext) {
+            return socket
+        })
+        socket.on('disconnect', (_reason) => {
+            // console.log(reason)
+            socket.removeAllListeners();
+        });
+    }
+
 }
 
 export default new Ws()
